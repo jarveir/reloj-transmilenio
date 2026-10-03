@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Registro de trayecto</title>
+<style>
+:root{
+  --ink:#121212; --muted:#7a7a7a; --faint:#e3e3e3; --bg:#f7f7f5; --card:#ffffff;
+  --accent:#0e3a4d; --accent2:#7c1e1e; --good:#2f6f4f;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#f0f0f0; --muted:#9aa0a6; --faint:#333333; --bg:#111213; --card:#1c1d1f;
+    --accent:#7fb3c9; --accent2:#e29494; --good:#8fd6ac;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#f0f0f0; --muted:#9aa0a6; --faint:#333333; --bg:#111213; --card:#1c1d1f;
+  --accent:#7fb3c9; --accent2:#e29494; --good:#8fd6ac;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px);
+}
+.wrap{max-width:520px; margin:0 auto; padding:20px 16px 40px;}
+h1{font-size:22px; margin:4px 0 2px;}
+h2{font-size:16px; margin:0 0 10px;}
+.sub{margin:0; color:var(--muted); font-size:14px;}
+.counter{margin:6px 0 0; font-size:13px; color:var(--accent); font-weight:600;}
+.warning{background:#fff3cd; color:#7a5b00; border-radius:10px; padding:10px 12px; font-size:13px; margin:14px 0;}
+@media (prefers-color-scheme: dark){.warning{background:#3a2f10; color:#f0d580;}}
+:root[data-theme="dark"] .warning{background:#3a2f10; color:#f0d580;}
+.card{background:var(--card); border-radius:16px; padding:16px; margin-top:16px; box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.field-group{margin-bottom:16px;}
+.field-group:last-child{margin-bottom:0;}
+label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600;}
+.label-row{display:flex; align-items:center; gap:8px;}
+.dia-badge{display:inline-block; font-size:11px; font-weight:700; color:var(--accent); background:rgba(14,58,77,.08); padding:2px 8px; border-radius:20px; text-transform:capitalize;}
+:root[data-theme="dark"] .dia-badge{background:rgba(127,179,201,.15);}
+.field-row{display:flex; gap:10px; margin-bottom:4px;}
+.field-row.two .field{flex:1;}
+input[type="date"], input[type="time"], input[type="text"], input[type="number"], select, textarea{
+  width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--faint);
+  background:var(--card); color:var(--ink); font-size:16px; min-height:44px;
+  font-family:inherit;
+}
+textarea{resize:vertical; min-height:70px; line-height:1.4;}
+.duration-display{font-size:14px; color:var(--accent); font-weight:700; margin:2px 0 16px;}
+.toggle-row{display:flex; gap:8px;}
+.toggle-btn{flex:1; padding:12px 8px; border-radius:10px; border:1px solid var(--faint);
+  background:var(--card); color:var(--ink); font-size:14px; min-height:44px; cursor:pointer;}
+.toggle-btn.active{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;}
+.stepper{display:flex; align-items:center; gap:8px;}
+.stepper button{width:44px; height:44px; border-radius:10px; border:1px solid var(--faint); background:var(--card); color:var(--ink); font-size:20px; cursor:pointer;}
+.stepper input{text-align:center; flex:1;}
+.checkbox-group{display:flex; flex-direction:column; gap:8px;}
+.checkbox-label{display:flex; align-items:center; gap:8px; font-size:15px; color:var(--ink); font-weight:400;}
+.checkbox-label input{width:18px; height:18px;}
+details.more{margin-bottom:16px;}
+details.more summary{font-size:13px; color:var(--accent); font-weight:700; cursor:pointer; padding:6px 0;}
+details.more > *:not(summary){margin-top:14px;}
+.form-actions{display:flex; gap:10px; margin-top:6px;}
+button.primary{flex:1; background:var(--accent); color:#fff; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:700; min-height:48px; cursor:pointer;}
+button.ghost{background:transparent; color:var(--accent); border:1px solid var(--accent); border-radius:12px; padding:12px 14px; font-size:14px; min-height:44px; cursor:pointer;}
+button.ghost.small{padding:8px 12px; font-size:13px; min-height:36px;}
+.stats{display:flex; flex-wrap:wrap; gap:14px 22px;}
+.stat{min-width:100px;}
+.stat b{display:block; font-size:20px; color:var(--ink);}
+.stat span{font-size:12px; color:var(--muted);}
+.history-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+.empty-hist{color:var(--muted); font-size:14px;}
+.hist-row{border-top:1px solid var(--faint); padding:12px 0;}
+.hist-row:first-child{border-top:none; padding-top:0;}
+.hist-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;}
+.hist-trayecto{font-weight:700; font-size:14px;}
+.hist-dur{font-weight:700; color:var(--accent); font-size:14px;}
+.hist-meta{font-size:12px; color:var(--muted); margin-bottom:4px;}
+.hist-comment{font-size:12px; color:var(--ink); font-style:italic; margin-bottom:8px;}
+.hist-actions{display:flex; gap:8px;}
+.hist-actions button{font-size:12px; padding:6px 10px; min-height:32px; border-radius:8px; border:1px solid var(--faint); background:var(--card); color:var(--muted); cursor:pointer;}
+.hist-actions button.danger{color:var(--accent2); border-color:var(--accent2);}
+footer.credit{text-align:center; color:var(--muted); font-size:11px; margin-top:28px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Registro de trayecto</h1>
+    <p class="sub">Parque Mundo Aventura &harr; Tequendama</p>
+    <p class="counter" id="counter">0 registros guardados</p>
+  </header>
+
+  <div id="save-warning" class="warning">Versión de demostración: los registros se guardan solo en este navegador. Ya trae mis 9 mañanas reales; puedes editarlos o agregar los tuyos.</div>
+
+  <form id="trip-form" class="card">
+    <div class="field-group">
+      <label>Que trayecto es</label>
+      <div class="toggle-row" id="tramo-toggle">
+        <button type="button" class="toggle-btn active" data-value="ida">Casa &rarr; Oficina</button>
+        <button type="button" class="toggle-btn" data-value="vuelta">Oficina &rarr; Casa</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="label-row">
+        <label for="f-fecha" style="margin-bottom:0;">Fecha</label>
+        <span class="dia-badge" id="f-dia-semana">&nbsp;</span>
+      </div>
+      <input type="date" id="f-fecha">
+    </div>
+
+    <div class="field-row two">
+      <div class="field">
+        <label for="f-salida">Salgo</label>
+        <input type="time" id="f-salida">
+      </div>
+      <div class="field">
+        <label for="f-llegada">Llego</label>
+        <input type="time" id="f-llegada">
+      </div>
+    </div>
+    <div class="duration-display" id="f-duracion">Duracion: &mdash;</div>
+
+    <div class="field-group">
+      <label for="f-ocupacion">Como iba el bus</label>
+      <select id="f-ocupacion">
+        <option value="vacio">Vacio &mdash; voy sentado</option>
+        <option value="normal" selected>Normal &mdash; de pie, con espacio</option>
+        <option value="lleno">Lleno &mdash; de pie, apretado</option>
+        <option value="muy_lleno">Muy lleno &mdash; no pude subir / pegado a la puerta</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label for="f-ascensor">Ascensor (piso 11)</label>
+      <select id="f-ascensor">
+        <option value="ya_piso">Ya estaba en mi piso</option>
+        <option value="inmediato" selected>Llegó casi de inmediato</option>
+        <option value="corta">Esperé un poco (1 a 3 min)</option>
+        <option value="larga">Esperé bastante (más de 3 min)</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label>Me acompañaron hasta la estación</label>
+      <div class="toggle-row" id="acompanado-estacion-toggle">
+        <button type="button" class="toggle-btn" data-value="si">Sí</button>
+        <button type="button" class="toggle-btn active" data-value="no">No</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="f-comentarios">Comentarios de este trayecto (opcional)</label>
+      <textarea id="f-comentarios" maxlength="280" placeholder="Cualquier cosa fuera de lo normal: choque, bus dañado, calle cerrada, algo puntual..."></textarea>
+    </div>
+
+    <details class="more">
+      <summary>Mas detalles del trayecto (opcional)</summary>
+
+      <div class="field-group">
+        <label for="f-ruta">Ruta tomada</label>
+        <select id="f-ruta"></select>
+      </div>
+
+      <div class="field-group">
+        <label for="f-trasbordo">Trasbordo</label>
+        <select id="f-trasbordo">
+          <option value="no">No</option>
+          <option value="jimenez">Si, en Jimenez</option>
+          <option value="otro">Si, en otro punto</option>
+        </select>
+        <input type="text" id="f-trasbordo-donde" placeholder="Donde" hidden style="margin-top:8px;">
+      </div>
+
+      <div class="field-group">
+        <label for="f-buses-pasados">Buses / TransMilenios que deje pasar antes de subir</label>
+        <div class="stepper">
+          <button type="button" id="f-buses-menos">&minus;</button>
+          <input type="number" id="f-buses-pasados" min="0" value="0" inputmode="numeric">
+          <button type="button" id="f-buses-mas">+</button>
+        </div>
+      </div>
+
+      <div class="field-group checkbox-group">
+        <label class="checkbox-label"><input type="checkbox" id="f-recarga"> Tuve que recargar la tarjeta</label>
+        <select id="f-recarga-tiempo" hidden>
+          <option value="<1">Menos de 1 min</option>
+          <option value="1-3">1 a 3 min</option>
+          <option value="+3">Mas de 3 min</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Aviso de retraso en el servicio</label>
+        <div class="toggle-row" id="aviso-toggle">
+          <button type="button" class="toggle-btn" data-value="si">Si</button>
+          <button type="button" class="toggle-btn active" data-value="no">No</button>
+        </div>
+        <input type="text" id="f-aviso-nota" placeholder="Que decia el aviso" hidden style="margin-top:8px;">
+      </div>
+    </details>
+
+    <div class="form-actions">
+      <button type="submit" id="f-guardar" class="primary">Guardar registro</button>
+      <button type="button" id="f-cancelar" class="ghost" hidden>Cancelar edicion</button>
+    </div>
+  </form>
+
+  <section class="stats card" id="stats"></section>
+
+  <section class="history card">
+    <div class="history-head">
+      <h2>Historial</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;"><button type="button" id="btn-reset" class="ghost small">Restaurar los 9 días</button><button type="button" id="btn-export" class="ghost small">Exportar CSV</button></div>
+    </div>
+    <div id="history-list"></div>
+  </section>
+
+  <footer class="credit">Ejercicio 2 &middot; DataViz &middot; Jarveir Rodriguez Lozano</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'trayecto-registros-v1';
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  var DIAS = ['domingo', 'lunes', 'martes', 'mi\u00e9rcoles', 'jueves', 'viernes', 's\u00e1bado'];
+  function diaSemanaFromFecha(fechaStr) {
+    if (!fechaStr) return '';
+    var p = fechaStr.split('-');
+    if (p.length !== 3) return '';
+    var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+    if (isNaN(d.getTime())) return '';
+    return DIAS[d.getDay()];
+  }
+  function timeToMinutes(hhmm) {
+    if (!hhmm) return null;
+    var p = hhmm.split(':');
+    if (p.length < 2) return null;
+    var h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+    if (isNaN(h) || isNaN(m)) return null;
+    return h * 60 + m;
+  }
+  function minutesToLabel(mins) {
+    if (mins === null || mins === undefined || isNaN(mins)) return '\u2014';
+    if (mins < 0) return 'revisa las horas';
+    if (mins < 60) return mins + ' min';
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return h + ' h ' + (m > 0 ? m + ' min' : '');
+  }
+
+  /* ---------- Datos reales precargados (9 mananas de ida) ---------- */
+  function mk(fecha, salida, llegada, o) {
+    var s = timeToMinutes(salida), l = timeToMinutes(llegada);
+    var base = {
+      fecha: fecha, diaSemana: diaSemanaFromFecha(fecha), tramo: 'ida',
+      salida: salida, llegada: llegada, duracionMin: l - s,
+      ocupacion: '', ascensor: '', acompanadoEstacion: false, comentarios: '',
+      ruta: 'M51 (directo)', trasbordo: 'no', trasbordoDonde: '', busesPasados: 0,
+      recargaHecha: false, recargaTiempo: '', avisoRetraso: false, avisoNota: '',
+      registradoEn: ''
+    };
+    for (var k in o) { if (Object.prototype.hasOwnProperty.call(o, k)) base[k] = o[k]; }
+    return base;
+  }
+
+  var SEED = [
+    mk('2026-09-21', '06:07', '06:58', {
+      ocupacion: 'lleno', ascensor: 'inmediato',
+      comentarios: 'El ascensor lleg\u00f3 r\u00e1pido pero par\u00f3 en los pisos 5 y 4. En la obra de Am\u00e9ricas con 13 no cog\u00ed el primer sem\u00e1foro, pero s\u00ed los otros dos.'
+    }),
+    mk('2026-09-22', '06:09', '06:55', {
+      ocupacion: 'lleno', ascensor: 'corta', busesPasados: 1,
+      comentarios: 'Se me pas\u00f3 el bus de las 6:18; sub\u00ed al de las 6:24, lleno. Cog\u00ed 2 sem\u00e1foros de la obra de Am\u00e9ricas con 13.'
+    }),
+    mk('2026-09-23', '06:06', '06:56', {
+      ascensor: 'corta', acompanadoEstacion: true,
+      comentarios: 'Iba un poco lleno. Camin\u00e9 m\u00e1s lento hablando con Vale. El bus se demor\u00f3 3 min en Distrito Grafiti. Sem\u00e1foros de la obra: 3 min, 2 min y 1 min.'
+    }),
+    mk('2026-09-24', '05:56', '06:38', {
+      ocupacion: 'normal', ascensor: 'inmediato', acompanadoEstacion: true,
+      comentarios: 'Sal\u00ed con Vale y Boo. Casi no me demor\u00e9 en los sem\u00e1foros de la obra (~1 min cada uno) ni en Distrito Grafiti. Termin\u00e9 de pasar la obra a las 6:18. El d\u00eda m\u00e1s r\u00e1pido.'
+    }),
+    mk('2026-09-25', '06:11', '07:05', {
+      ascensor: 'corta', ruta: 'J23 + trasbordo en Jim\u00e9nez a M51', trasbordo: 'jimenez', trasbordoDonde: 'Jim\u00e9nez',
+      comentarios: 'Sub\u00ed al bus a las 6:27, baj\u00e9 en Jim\u00e9nez a las 6:51 e hice el trasbordo a las 6:52. Cog\u00ed 2 sem\u00e1foros de la obra.'
+    }),
+    mk('2026-09-28', '06:05', '07:06', {
+      ocupacion: 'muy_lleno', ascensor: 'inmediato', busesPasados: 2,
+      comentarios: 'Llovi\u00f3. Se me pasaron buses a las 6:20 y a las 6:24 por lo llenos; pude subir a las 6:27. El peor d\u00eda.'
+    }),
+    mk('2026-09-29', '06:04', '06:54', {
+      busesPasados: 2,
+      comentarios: 'Se me pasaron buses a las 6:18 y a las 6:21. El ascensor se demor\u00f3.'
+    }),
+    mk('2026-09-30', '06:06', '07:00', {
+      ascensor: 'inmediato', busesPasados: null,
+      comentarios: 'Sub\u00ed al bus a las 6:25. Ese d\u00eda desayun\u00e9 antes de ba\u00f1arme, algo que nunca hago. Llegu\u00e9 exacto a la hora l\u00edmite.'
+    }),
+    mk('2026-10-01', '06:06', '06:56', {
+      ocupacion: 'normal', ascensor: 'ya_piso',
+      comentarios: 'Sub\u00ed al primer M51 que pas\u00f3, a las 6:18. El ascensor ya estaba en mi piso.'
+    })
+  ];
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return SEED.slice();
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(records)); } catch (e) {}
+  }
+
+  var records = load();
+  var editingIndex = null;
+
+  var OCUPACION_LABELS = {
+    vacio: 'Vac\u00edo (sentado)',
+    normal: 'Normal (de pie, con espacio)',
+    lleno: 'Lleno (de pie, apretado)',
+    muy_lleno: 'Muy lleno (no pude subir / pegado)'
+  };
+  var TRAMO_LABELS = { ida: 'Casa \u2192 Oficina', vuelta: 'Oficina \u2192 Casa' };
+  var TRASBORDO_LABELS = { no: 'No', jimenez: 'S\u00ed, en Jim\u00e9nez', otro: 'S\u00ed, en otro punto' };
+  var ASCENSOR_LABELS = {
+    ya_piso: 'Ya estaba en mi piso',
+    inmediato: 'Lleg\u00f3 casi de inmediato',
+    corta: 'Esper\u00e9 un poco (1-3 min)',
+    larga: 'Esper\u00e9 bastante (+3 min)'
+  };
+
+  function rutaOptionsFor(tramo) {
+    if (tramo === 'ida') return ['M51 (directo)', 'J23 + trasbordo en Jim\u00e9nez a M51', 'Otra'];
+    return ['Ruta 23', 'Otra'];
+  }
+
+  function setToggleGroup(containerId, value) {
+    var btns = $(containerId).querySelectorAll('.toggle-btn');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].getAttribute('data-value') === value) btns[i].classList.add('active');
+      else btns[i].classList.remove('active');
+    }
+  }
+  function getToggleValue(containerId) {
+    var a = $(containerId).querySelector('.toggle-btn.active');
+    return a ? a.getAttribute('data-value') : null;
+  }
+  function wireToggleGroup(containerId, onChange) {
+    var btns = $(containerId).querySelectorAll('.toggle-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener('click', function (ev) {
+        setToggleGroup(containerId, ev.currentTarget.getAttribute('data-value'));
+        if (onChange) onChange();
+      });
+    }
+  }
+
+  function refreshRutaOptions(preserve) {
+    var opts = rutaOptionsFor(getToggleValue('tramo-toggle'));
+    var sel = $('f-ruta');
+    var prev = preserve ? sel.value : null;
+    sel.innerHTML = '';
+    opts.forEach(function (label) {
+      var o = document.createElement('option');
+      o.value = label; o.textContent = label;
+      sel.appendChild(o);
+    });
+    if (prev && opts.indexOf(prev) !== -1) sel.value = prev;
+    onRutaChange();
+  }
+  function onRutaChange() {
+    var ruta = $('f-ruta').value;
+    if (ruta.indexOf('trasbordo') !== -1) $('f-trasbordo').value = 'jimenez';
+    else if ($('f-trasbordo').value === 'jimenez') $('f-trasbordo').value = 'no';
+    onTrasbordoChange();
+  }
+  function onTrasbordoChange() {
+    var v = $('f-trasbordo').value;
+    $('f-trasbordo-donde').hidden = (v === 'no');
+    if (v === 'jimenez' && !$('f-trasbordo-donde').value) $('f-trasbordo-donde').value = 'Jim\u00e9nez';
+    if (v === 'no') $('f-trasbordo-donde').value = '';
+  }
+  function updateDiaBadge() {
+    $('f-dia-semana').textContent = diaSemanaFromFecha($('f-fecha').value) || '\u00a0';
+  }
+  function computeDuration() {
+    var s = timeToMinutes($('f-salida').value), l = timeToMinutes($('f-llegada').value);
+    var label = '\u2014';
+    if (s !== null && l !== null) label = minutesToLabel(l - s);
+    $('f-duracion').textContent = 'Duraci\u00f3n: ' + label;
+  }
+
+  function resetForm() {
+    editingIndex = null;
+    $('f-fecha').value = todayISO();
+    updateDiaBadge();
+    setToggleGroup('tramo-toggle', 'ida');
+    refreshRutaOptions(false);
+    $('f-salida').value = '';
+    $('f-llegada').value = '';
+    $('f-ocupacion').value = 'normal';
+    $('f-ascensor').value = 'inmediato';
+    setToggleGroup('acompanado-estacion-toggle', 'no');
+    $('f-comentarios').value = '';
+    $('f-trasbordo').value = 'no';
+    onTrasbordoChange();
+    $('f-buses-pasados').value = 0;
+    $('f-recarga').checked = false;
+    $('f-recarga-tiempo').hidden = true;
+    $('f-recarga-tiempo').value = '<1';
+    setToggleGroup('aviso-toggle', 'no');
+    $('f-aviso-nota').hidden = true;
+    $('f-aviso-nota').value = '';
+    computeDuration();
+    $('f-guardar').textContent = 'Guardar registro';
+    $('f-cancelar').hidden = true;
+  }
+
+  function collectFormData() {
+    var s = timeToMinutes($('f-salida').value), l = timeToMinutes($('f-llegada').value);
+    var fecha = $('f-fecha').value || todayISO();
+    return {
+      fecha: fecha, diaSemana: diaSemanaFromFecha(fecha),
+      tramo: getToggleValue('tramo-toggle'),
+      salida: $('f-salida').value, llegada: $('f-llegada').value,
+      duracionMin: (s !== null && l !== null) ? (l - s) : null,
+      ocupacion: $('f-ocupacion').value, ascensor: $('f-ascensor').value,
+      acompanadoEstacion: getToggleValue('acompanado-estacion-toggle') === 'si',
+      comentarios: $('f-comentarios').value,
+      ruta: $('f-ruta').value, trasbordo: $('f-trasbordo').value,
+      trasbordoDonde: $('f-trasbordo-donde').hidden ? '' : $('f-trasbordo-donde').value,
+      busesPasados: parseInt($('f-buses-pasados').value, 10) || 0,
+      recargaHecha: $('f-recarga').checked,
+      recargaTiempo: $('f-recarga').checked ? $('f-recarga-tiempo').value : '',
+      avisoRetraso: getToggleValue('aviso-toggle') === 'si',
+      avisoNota: $('f-aviso-nota').hidden ? '' : $('f-aviso-nota').value,
+      registradoEn: new Date().toISOString()
+    };
+  }
+
+  function loadFormData(r) {
+    $('f-fecha').value = r.fecha || todayISO();
+    updateDiaBadge();
+    setToggleGroup('tramo-toggle', r.tramo || 'ida');
+    refreshRutaOptions(false);
+    if (r.ruta) $('f-ruta').value = r.ruta;
+    $('f-salida').value = r.salida || '';
+    $('f-llegada').value = r.llegada || '';
+    $('f-ocupacion').value = r.ocupacion || 'normal';
+    $('f-ascensor').value = r.ascensor || 'inmediato';
+    setToggleGroup('acompanado-estacion-toggle', r.acompanadoEstacion ? 'si' : 'no');
+    $('f-comentarios').value = r.comentarios || '';
+    $('f-trasbordo').value = r.trasbordo || 'no';
+    onTrasbordoChange();
+    if (r.trasbordoDonde) $('f-trasbordo-donde').value = r.trasbordoDonde;
+    $('f-buses-pasados').value = r.busesPasados || 0;
+    $('f-recarga').checked = !!r.recargaHecha;
+    $('f-recarga-tiempo').hidden = !r.recargaHecha;
+    if (r.recargaTiempo) $('f-recarga-tiempo').value = r.recargaTiempo;
+    setToggleGroup('aviso-toggle', r.avisoRetraso ? 'si' : 'no');
+    $('f-aviso-nota').hidden = !r.avisoRetraso;
+    $('f-aviso-nota').value = r.avisoNota || '';
+    computeDuration();
+    $('f-guardar').textContent = 'Actualizar registro';
+    $('f-cancelar').hidden = false;
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderCounter() {
+    $('counter').textContent = records.length + (records.length === 1 ? ' registro guardado' : ' registros guardados');
+  }
+
+  function renderStats() {
+    function ok(r, t) { return r.tramo === t && typeof r.duracionMin === 'number' && r.duracionMin >= 0; }
+    var ida = records.filter(function (r) { return ok(r, 'ida'); });
+    var vuelta = records.filter(function (r) { return ok(r, 'vuelta'); });
+    function avg(list) {
+      if (!list.length) return null;
+      return Math.round(list.reduce(function (a, r) { return a + r.duracionMin; }, 0) / list.length);
+    }
+    var noAlcance = records.filter(function (r) { return (r.busesPasados || 0) > 0; }).length;
+    var html = '';
+    html += '<div class="stat"><b>' + records.length + '</b><span>registros totales</span></div>';
+    html += '<div class="stat"><b>' + (avg(ida) !== null ? minutesToLabel(avg(ida)) : '\u2014') + '</b><span>promedio ida</span></div>';
+    html += '<div class="stat"><b>' + (avg(vuelta) !== null ? minutesToLabel(avg(vuelta)) : '\u2014') + '</b><span>promedio vuelta</span></div>';
+    html += '<div class="stat"><b>' + noAlcance + ' de ' + records.length + '</b><span>no alcanc\u00e9 el primero</span></div>';
+    $('stats').innerHTML = html;
+  }
+
+  function renderHistory() {
+    var list = $('history-list');
+    if (!records.length) {
+      list.innerHTML = '<p class="empty-hist">Todav\u00eda no hay registros. Llena el formulario de arriba.</p>';
+      return;
+    }
+    var ordered = records.map(function (r, i) { return { r: r, i: i }; }).sort(function (a, b) {
+      var da = (a.r.fecha || '') + (a.r.salida || ''), db = (b.r.fecha || '') + (b.r.salida || '');
+      return db < da ? -1 : (db > da ? 1 : 0);
+    });
+    var html = '';
+    ordered.forEach(function (item) {
+      var r = item.r, i = item.i;
+      var occ = OCUPACION_LABELS[r.ocupacion] || '';
+      html += '<div class="hist-row">';
+      html += '<div class="hist-top"><span class="hist-trayecto">' + (TRAMO_LABELS[r.tramo] || '') + '</span>' +
+        '<span class="hist-dur">' + minutesToLabel(r.duracionMin) + '</span></div>';
+      html += '<div class="hist-meta">' + escapeHtml(r.fecha || '') + (r.diaSemana ? ' (' + escapeHtml(r.diaSemana) + ')' : '') +
+        ' &middot; ' + escapeHtml(r.salida || '?') + ' \u2192 ' + escapeHtml(r.llegada || '?') +
+        (occ ? ' &middot; ' + occ : '') + '</div>';
+      if (r.comentarios) html += '<div class="hist-comment">\u201c' + escapeHtml(r.comentarios) + '\u201d</div>';
+      html += '<div class="hist-actions">' +
+        '<button type="button" class="btn-edit" data-index="' + i + '">Editar</button>' +
+        '<button type="button" class="btn-delete danger" data-index="' + i + '">Eliminar</button></div>';
+      html += '</div>';
+    });
+    list.innerHTML = html;
+
+    var editBtns = list.querySelectorAll('.btn-edit');
+    for (var a = 0; a < editBtns.length; a++) {
+      editBtns[a].addEventListener('click', function (ev) {
+        var idx = parseInt(ev.currentTarget.getAttribute('data-index'), 10);
+        editingIndex = idx;
+        loadFormData(records[idx]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+    var delBtns = list.querySelectorAll('.btn-delete');
+    for (var b = 0; b < delBtns.length; b++) {
+      delBtns[b].addEventListener('click', function (ev) {
+        var btn = ev.currentTarget;
+        if (btn.getAttribute('data-armed') === '1') {
+          var idx = parseInt(btn.getAttribute('data-index'), 10);
+          var next = records.slice();
+          next.splice(idx, 1);
+          persist(next);
+        } else {
+          btn.setAttribute('data-armed', '1');
+          var original = btn.textContent;
+          btn.textContent = '\u00bfSeguro?';
+          setTimeout(function () { btn.removeAttribute('data-armed'); btn.textContent = original; }, 3000);
+        }
+      });
+    }
+  }
+
+  function renderAll() { renderCounter(); renderStats(); renderHistory(); }
+
+  function persist(next) {
+    records = next;
+    save();
+    resetForm();
+    renderAll();
+  }
+
+  function csvEscape(v) {
+    var s = (v === null || v === undefined) ? '' : String(v);
+    if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function buildCsv() {
+    var headers = ['Fecha', 'Dia', 'Trayecto', 'Salida', 'Llegada', 'Duracion (min)', 'Ocupacion',
+      'Ascensor', 'Acompanado a la estacion', 'Comentarios', 'Ruta', 'Trasbordo', 'Trasbordo donde',
+      'Buses dejados pasar', 'Recarga hecha', 'Recarga tiempo', 'Aviso de retraso', 'Nota aviso', 'Registrado en'];
+    var rows = [headers.join(',')];
+    records.forEach(function (r) {
+      rows.push([
+        r.fecha, r.diaSemana, TRAMO_LABELS[r.tramo] || r.tramo, r.salida, r.llegada, r.duracionMin,
+        OCUPACION_LABELS[r.ocupacion] || r.ocupacion || '', ASCENSOR_LABELS[r.ascensor] || r.ascensor || '',
+        r.acompanadoEstacion ? 'si' : 'no', r.comentarios,
+        r.ruta, TRASBORDO_LABELS[r.trasbordo] || r.trasbordo, r.trasbordoDonde, r.busesPasados,
+        r.recargaHecha ? 'si' : 'no', r.recargaTiempo,
+        r.avisoRetraso ? 'si' : 'no', r.avisoNota, r.registradoEn
+      ].map(csvEscape).join(','));
+    });
+    return rows.join('\n');
+  }
+  function exportCsv() {
+    if (!records.length) { alert('Todav\u00eda no hay registros para exportar.'); return; }
+    var blob = new Blob(['\ufeff' + buildCsv()], { type: 'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'registro-trayecto.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function init() {
+    wireToggleGroup('tramo-toggle', function () { refreshRutaOptions(false); });
+    wireToggleGroup('acompanado-estacion-toggle', null);
+    wireToggleGroup('aviso-toggle', function () {
+      $('f-aviso-nota').hidden = (getToggleValue('aviso-toggle') === 'no');
+    });
+    $('f-fecha').addEventListener('change', updateDiaBadge);
+    $('f-salida').addEventListener('change', computeDuration);
+    $('f-llegada').addEventListener('change', computeDuration);
+    $('f-ruta').addEventListener('change', onRutaChange);
+    $('f-trasbordo').addEventListener('change', onTrasbordoChange);
+    $('f-recarga').addEventListener('change', function () { $('f-recarga-tiempo').hidden = !this.checked; });
+    $('f-buses-menos').addEventListener('click', function () {
+      var i = $('f-buses-pasados'); i.value = Math.max(0, (parseInt(i.value, 10) || 0) - 1);
+    });
+    $('f-buses-mas').addEventListener('click', function () {
+      var i = $('f-buses-pasados'); i.value = (parseInt(i.value, 10) || 0) + 1;
+    });
+    $('f-cancelar').addEventListener('click', resetForm);
+
+    $('trip-form').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!$('f-salida').value || !$('f-llegada').value) {
+        alert('Faltan la hora de salida o de llegada.');
+        return;
+      }
+      var data = collectFormData();
+      var next = records.slice();
+      if (editingIndex !== null) next[editingIndex] = data; else next.push(data);
+      persist(next);
+      var btn = $('f-guardar');
+      btn.textContent = 'Guardado';
+      btn.disabled = true;
+      setTimeout(function () { btn.disabled = false; btn.textContent = 'Guardar registro'; }, 900);
+    });
+
+    $('btn-export').addEventListener('click', exportCsv);
+
+    $('btn-reset').addEventListener('click', function (ev) {
+      var btn = ev.currentTarget;
+      if (btn.getAttribute('data-armed') === '1') {
+        btn.removeAttribute('data-armed');
+        btn.textContent = 'Restaurar los 9 d\u00edas';
+        persist(SEED.slice());
+      } else {
+        btn.setAttribute('data-armed', '1');
+        btn.textContent = '\u00bfSeguro?';
+        setTimeout(function () { btn.removeAttribute('data-armed'); btn.textContent = 'Restaurar los 9 d\u00edas'; }, 3000);
+      }
+    });
+
+    resetForm();
+    renderAll();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>
